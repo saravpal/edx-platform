@@ -1,26 +1,23 @@
-<div class="thumbnail-wrapper">
-    <div class="thumbnail-select-area">
-        <img src="<%- thumbnailURL %>" alt="">
-        <span class="thumbnail-action">
-            <span class="icon fa fa-pencil action-icon" aria-hidden="true"></span>
-            <span class="action-text"><%- actionText %></span>
-        </span>
+<div class="thumbnail-wrapper <%- action === 'upload' ? 'upload' : '' %>">
+    <img src="<%- thumbnailURL %>" alt="">
+    <div class="thumbnail-overlay">
+        <!-- icon and text will be different for different states -->
+        <label for="thumb-<%- videoId %>" class="thumbnail-action">
+            <span class="action-icon" aria-hidden="true"><%= actionInfo.icon %></span>
+            <span class="action-text"><%- actionInfo.text %></span>
+        </label>
 
-        <!-- Below text will be shown on hover when there is no image -->
-        <span class="requirements-text" aria-hidden="true">
-            Image requirements
-            1280px by 720px
-            .jpg | .png | .gif
-        </span>
-
-        <!-- Below text will be used primarily for screen reader -->
+        <!-- text will be used primarily for screen reader -->
         <span class="requirements-text-sr sr">
-            <%- gettext('Recommended image resolution is 1280 pixels by 720 pixels and format must be one of .jpg, .png or .gif') %>
+            <%- gettext('Recommended image resolution is 1280x720 pixels and format must be one of .jpg, .png or .gif') %>
         </span>
-        <div class="video-duration">
-            <span class="duration-text-human sr"><%- durationTextHuman %></span>
-            <span class="duration-text-machine" aria-hidden="true"><%- durationTextMachine %></span>
-        </div>
     </div>
-    <input class="upload-image-input" type="file" name="file" />
+    <% if(duration) { %>
+        <div class="video-duration is-hidden">
+        <span class="duration-text-human sr"><%- duration.human %></span>
+        <span class="duration-text-machine" aria-hidden="true"><%- durataion.machine %></span>
+    </div>
+    <% } %>
 </div>
+<!-- hidden input for image choose dialog -->
+<input id="thumb-<%- videoId %>" class="upload-image-input is-hidden" type="file" name="file" accept=".bmp, .jpg, .jpeg, .png, .gif"/>

@@ -17,7 +17,10 @@ define(
             initialize: function(options) {
                 this.template = HtmlUtils.template(previousVideoUploadTemplate);
                 this.videoHandlerUrl = options.videoHandlerUrl;
-                this.videoThumbnailView = new VideoThumbnailView({model: this.model});
+                this.videoThumbnailView = new VideoThumbnailView({
+                    model: this.model,
+                    imageUploadURL: options.image_upload_url
+                });
             },
 
             render: function() {
