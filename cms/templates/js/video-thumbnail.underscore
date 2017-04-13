@@ -14,7 +14,7 @@
     </div>
     <% if(duration) { %>
         <div class="video-duration is-hidden">
-        <span class="duration-text-human sr"><%- duration.human %></span>
+        <span class="duration-text-human sr"><%- duration.humanize %></span>
         <span class="duration-text-machine" aria-hidden="true"><%- durataion.machine %></span>
     </div>
     <% } %>

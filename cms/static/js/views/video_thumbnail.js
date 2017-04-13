@@ -53,18 +53,24 @@ define(
             },
 
             render: function() {
-                var durationSeconds = this.model.get('duration');
+                var durationSeconds = this.model.get('duration'),
+                    duration;
+
+                if (durationSeconds > 0) {
+                    duration = {
+                        humanize: this.getDurationTextHuman(durationSeconds),
+                        machine: this.getDurationTextMachine(durationSeconds)
+                    };
+                }
 
                 HtmlUtils.setHtml(
                     this.$el,
                     this.template({
                         action: this.action,
-                        actionInfo: this.actionsInfo[this.action],
-                        thumbnailURL: this.model.get('thumbnail_url'),
-                        duration: null,
+                        duration: duration,
                         videoId: this.model.get('edx_video_id'),
-                        durationTextHuman: this.getDurationTextHuman(durationSeconds),
-                        durationTextMachine: this.getDurationTextMachine(durationSeconds)
+                        actionInfo: this.actionsInfo[this.action],
+                        thumbnailURL: this.model.get('thumbnail_url')
                     })
                 );
 
@@ -81,6 +87,7 @@ define(
 
             getDurationTextHuman: function(durationSeconds) {
                 return StringUtils.interpolate(
+                    // Translators: humanizeDuration will be like 10 minutes, an hour and 20 minutes etc
                     gettext('Video duration is {humanizeDuration}'),
                     {
                         humanizeDuration: this.getHumanizeDuration(durationSeconds)
@@ -94,10 +101,6 @@ define(
                     hoursText = null,
                     minutesText = null;
 
-                if (durationSeconds <= 0) {
-                    return null;
-                }
-
                 hours = moment.duration(durationSeconds, 'seconds').hours();
                 minutes = moment.duration(durationSeconds, 'seconds').minutes();
 
@@ -109,16 +112,13 @@ define(
                     minutesText = moment.duration('00:' + minutes, 'HH:mm').humanize();
                 }
 
-                return _.filter([hoursText, minutesText]).join(' and ');
+                // Translators: `and` will be used to combine both hour and minutes like `an hour and 20 minutes` etc
+                return _.filter([hoursText, minutesText]).join(gettext(' and '));
             },
 
             getDurationTextMachine: function(durationSeconds) {
                 var minutes,
                     seconds;
-
-                if (durationSeconds <= 0) {
-                    return null;
-                }
 
                 minutes = Math.floor(durationSeconds / 60);
                 seconds = Math.floor(durationSeconds - minutes * 60);
