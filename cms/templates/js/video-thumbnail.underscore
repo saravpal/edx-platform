@@ -3,7 +3,7 @@
     <div class="thumbnail-overlay">
         <!-- icon and text will be different for different states -->
         <label for="thumb-<%- videoId %>" class="thumbnail-action">
-            <span class="action-icon" aria-hidden="true"><%= actionInfo.icon %></span>
+            <span class="action-icon" aria-hidden="true"><%- actionInfo.icon %></span>
             <span class="action-text"><%- actionInfo.text %></span>
         </label>
 
@@ -13,10 +13,10 @@
         </span>
     </div>
     <% if(duration) { %>
-        <div class="video-duration is-hidden">
-        <span class="duration-text-human sr"><%- duration.humanize %></span>
-        <span class="duration-text-machine" aria-hidden="true"><%- durataion.machine %></span>
-    </div>
+        <div class="video-duration">
+            <span class="duration-text-human sr"><%- duration.humanize %></span>
+            <span class="duration-text-machine" aria-hidden="true"><%- duration.machine %></span>
+        </div>
     <% } %>
 </div>
 <!-- hidden input for image choose dialog -->

@@ -11,6 +11,7 @@ define(
                 this.encodingsDownloadUrl = options.encodingsDownloadUrl;
                 this.itemViews = this.collection.map(function(model) {
                     return new PreviousVideoUploadView({
+                        videoImageUploadURL: options.videoImageUploadURL,
                         videoHandlerUrl: options.videoHandlerUrl,
                         model: model
                     });

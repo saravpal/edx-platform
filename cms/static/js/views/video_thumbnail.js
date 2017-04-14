@@ -76,7 +76,7 @@ define(
 
                 // Initialize jquery fileuploader
                 this.$('.upload-image-input').fileupload({
-                    url: this.imageUploadURL,
+                    url: this.imageUploadURL + '/' + encodeURIComponent(this.model.get('edx_video_id')),
                     add: this.imageSelected,
                     done: this.imageUploadSucceeded,
                     fail: this.imageUploadFailed
@@ -96,32 +96,43 @@ define(
             },
 
             getHumanizeDuration: function(durationSeconds) {
-                var hours,
-                    minutes,
-                    hoursText = null,
-                    minutesText = null;
+                var minutes,
+                    seconds,
+                    minutesText = null,
+                    secondsText = null,
+                    minuteSingular = gettext('minute'),
+                    minutePlural = gettext('minutes'),
+                    secondSingular = gettext('second'),
+                    secondPlural = gettext('seconds');
 
-                hours = moment.duration(durationSeconds, 'seconds').hours();
                 minutes = moment.duration(durationSeconds, 'seconds').minutes();
-
-                if (hours) {
-                    hoursText = moment.duration(hours + ':00', 'HH:mm').humanize();
-                }
+                seconds = moment.duration(durationSeconds, 'seconds').seconds();
 
                 if (minutes) {
-                    minutesText = moment.duration('00:' + minutes, 'HH:mm').humanize();
+                    minutesText = minutes > 1 ? minutePlural : minuteSingular;
+                    minutesText = StringUtils.interpolate(
+                        // Translators: message will be like 15 minutes, 1 minute
+                        gettext('{minutes} {unit}'),
+                        {minutes: minutes, unit: minutesText}
+                    );
                 }
 
-                // Translators: `and` will be used to combine both hour and minutes like `an hour and 20 minutes` etc
-                return _.filter([hoursText, minutesText]).join(gettext(' and '));
+                if (seconds) {
+                    secondsText = seconds > 1 ? secondPlural : secondSingular;
+                    secondsText = StringUtils.interpolate(
+                        // Translators: message will be like 20 seconds, 1 second
+                        gettext('{seconds} {unit}'),
+                        {seconds: seconds, unit: secondsText}
+                    );
+                }
+
+                // Translators: `and` will be used to combine both miuntes and seconds like `13 minutes and 45 seconds`
+                return _.filter([minutesText, secondsText]).join(gettext(' and '));
             },
 
             getDurationTextMachine: function(durationSeconds) {
-                var minutes,
-                    seconds;
-
-                minutes = Math.floor(durationSeconds / 60);
-                seconds = Math.floor(durationSeconds - minutes * 60);
+                var minutes = Math.floor(durationSeconds / 60),
+                    seconds = Math.floor(durationSeconds - minutes * 60);
                 return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
             },
 
@@ -132,6 +143,9 @@ define(
 
             imageSelected: function(event, data) {
                 if (_.isUndefined(data.files[0].size) || this.validateImageSize(data.files[0].size)) {
+                    this.readMessages([
+                        gettext('Video image upload started')
+                    ]);
                     this.showUploadInProgressMessage();
                     data.submit();
                 }
@@ -140,12 +154,18 @@ define(
             imageUploadSucceeded: function(event, data) {
                 this.action = 'edit';
                 this.setActionInfo(this.action, false);
-                this.$('img').attr('src', data.result.asset.url);
+                this.$('img').attr('src', data.result.image_url);
+                this.readMessages([
+                    gettext('Video image upload completed')
+                ]);
             },
 
             imageUploadFailed: function(event, data) {
                 this.action = 'error';
                 this.setActionInfo(this.action, true);
+                this.readMessages([
+                    gettext('Video image upload failed')
+                ]);
             },
 
             showUploadInProgressMessage: function() {
@@ -174,6 +194,12 @@ define(
                 this.$('.thumbnail-action .action-icon').html(this.actionsInfo[action].icon);
                 this.$('.thumbnail-action .action-text').html(this.actionsInfo[action].text);
                 this.$('.thumbnail-wrapper').attr('class', 'thumbnail-wrapper {action}'.replace('{action}', action));
+            },
+
+            readMessages: function(messages) {
+                if ($(window).prop('SR') !== undefined) {
+                    $(window).prop('SR').readTexts(messages);
+                }
             },
 
             validateImageSize: function() {

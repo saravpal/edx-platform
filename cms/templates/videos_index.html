@@ -29,6 +29,7 @@
         var $contentWrapper = $(".content-primary");
         VideosIndexFactory(
             $contentWrapper,
+            "${image_upload_url | n, js_escaped_string}",
             "${video_handler_url | n, js_escaped_string}",
             "${encodings_download_url | n, js_escaped_string}",
             ${concurrent_upload_limit | n, dump_js_escaped_json},
