@@ -47,27 +47,17 @@ define(
                 this.imageUploadURL = options.imageUploadURL;
                 this.action = this.model.get('thumbnail_url') ? 'edit' : 'upload';
                 _.bindAll(
-                    this, 'render', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed', 'validateImageSize',
-                    'showHoverState', 'hideHoverState'
+                    this, 'render', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed', 'showHoverState',
+                    'hideHoverState'
                 );
             },
 
             render: function() {
-                var durationSeconds = this.model.get('duration'),
-                    duration;
-
-                if (durationSeconds > 0) {
-                    duration = {
-                        humanize: this.getDurationTextHuman(durationSeconds),
-                        machine: this.getDurationTextMachine(durationSeconds)
-                    };
-                }
-
                 HtmlUtils.setHtml(
                     this.$el,
                     this.template({
                         action: this.action,
-                        duration: duration,
+                        duration: this.getDuration(this.model.get('duration')),
                         videoId: this.model.get('edx_video_id'),
                         actionInfo: this.actionsInfo[this.action],
                         thumbnailURL: this.model.get('thumbnail_url')
@@ -85,12 +75,30 @@ define(
                 return this;
             },
 
+            getDuration: function(durationSeconds) {
+                if (durationSeconds <= 0) {
+                    return null;
+                }
+
+                return {
+                    humanize: this.getDurationTextHuman(durationSeconds),
+                    machine: this.getDurationTextMachine(durationSeconds)
+                };
+            },
+
             getDurationTextHuman: function(durationSeconds) {
+                var humanize = this.getHumanizeDuration(durationSeconds);
+
+                // This case is specifically to handle values between 0 and 1 seconds excluding upper bound
+                if (humanize.length === 0) {
+                    return '';
+                }
+
                 return StringUtils.interpolate(
                     // Translators: humanizeDuration will be like 10 minutes, an hour and 20 minutes etc
                     gettext('Video duration is {humanizeDuration}'),
                     {
-                        humanizeDuration: this.getHumanizeDuration(durationSeconds)
+                        humanizeDuration: humanize
                     }
                 );
             },
@@ -99,17 +107,13 @@ define(
                 var minutes,
                     seconds,
                     minutesText = null,
-                    secondsText = null,
-                    minuteSingular = gettext('minute'),
-                    minutePlural = gettext('minutes'),
-                    secondSingular = gettext('second'),
-                    secondPlural = gettext('seconds');
+                    secondsText = null;
 
-                minutes = moment.duration(durationSeconds, 'seconds').minutes();
+                minutes = Math.trunc(moment.duration(durationSeconds, 'seconds').asMinutes());
                 seconds = moment.duration(durationSeconds, 'seconds').seconds();
 
                 if (minutes) {
-                    minutesText = minutes > 1 ? minutePlural : minuteSingular;
+                    minutesText = minutes > 1 ? gettext('minutes') : gettext('minute');
                     minutesText = StringUtils.interpolate(
                         // Translators: message will be like 15 minutes, 1 minute
                         gettext('{minutes} {unit}'),
@@ -118,7 +122,7 @@ define(
                 }
 
                 if (seconds) {
-                    secondsText = seconds > 1 ? secondPlural : secondSingular;
+                    secondsText = seconds > 1 ? gettext('seconds') : gettext('second');
                     secondsText = StringUtils.interpolate(
                         // Translators: message will be like 20 seconds, 1 second
                         gettext('{seconds} {unit}'),
@@ -142,30 +146,22 @@ define(
             },
 
             imageSelected: function(event, data) {
-                if (_.isUndefined(data.files[0].size) || this.validateImageSize(data.files[0].size)) {
-                    this.readMessages([
-                        gettext('Video image upload started')
-                    ]);
-                    this.showUploadInProgressMessage();
-                    data.submit();
-                }
+                this.readMessages([gettext('Video image upload started')]);
+                this.showUploadInProgressMessage();
+                data.submit();
             },
 
             imageUploadSucceeded: function(event, data) {
                 this.action = 'edit';
                 this.setActionInfo(this.action, false);
                 this.$('img').attr('src', data.result.image_url);
-                this.readMessages([
-                    gettext('Video image upload completed')
-                ]);
+                this.readMessages([gettext('Video image upload completed')]);
             },
 
-            imageUploadFailed: function(event, data) {
+            imageUploadFailed: function() {
                 this.action = 'error';
                 this.setActionInfo(this.action, true);
-                this.readMessages([
-                    gettext('Video image upload failed')
-                ]);
+                this.readMessages([gettext('Video image upload failed')]);
             },
 
             showUploadInProgressMessage: function() {
@@ -200,10 +196,6 @@ define(
                 if ($(window).prop('SR') !== undefined) {
                     $(window).prop('SR').readTexts(messages);
                 }
-            },
-
-            validateImageSize: function() {
-                return true;
             }
         });
 

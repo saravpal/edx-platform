@@ -182,12 +182,16 @@
     &.requirements, {
       border: 1px dashed $gray-l3;
 
-      &:hover {
+      &:hover
+      &:focus {
         @include transition(all 0.3s linear);
       }
 
-      &:hover .video-duration{
-        opacity: 0;
+      &:hover
+      &:focus {
+        .video-duration{
+          opacity: 0;
+        }
       }
     }
 
@@ -195,7 +199,8 @@
       background: black;
     }
 
-    &.edit:hover {
+    &.edit:hover
+    &.edit:focus {
       img, .video-duration {
         @include transition(all 0.3s linear);
         opacity: 0.5;
