@@ -39,7 +39,9 @@ define(
             events: {
                 'click .thumbnail-wrapper': 'chooseFile',
                 'mouseover .thumbnail-wrapper': 'showHoverState',
-                'mouseout .thumbnail-wrapper': 'hideHoverState'
+                'mouseout .thumbnail-wrapper': 'hideHoverState',
+                'focus .thumbnail-wrapper': 'showHoverState',
+                'blur .thumbnail-wrapper': 'hideHoverState'
             },
 
             initialize: function(options) {
@@ -47,8 +49,8 @@ define(
                 this.imageUploadURL = options.imageUploadURL;
                 this.action = this.model.get('thumbnail_url') ? 'edit' : 'upload';
                 _.bindAll(
-                    this, 'render', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed', 'showHoverState',
-                    'hideHoverState'
+                    this, 'render', 'chooseFile', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed',
+                    'showHoverState', 'hideHoverState'
                 );
             },
 
@@ -63,15 +65,6 @@ define(
                         thumbnailURL: this.model.get('thumbnail_url')
                     })
                 );
-
-                // Initialize jquery fileuploader
-                this.$('.upload-image-input').fileupload({
-                    url: this.imageUploadURL + '/' + encodeURIComponent(this.model.get('edx_video_id')),
-                    add: this.imageSelected,
-                    done: this.imageUploadSucceeded,
-                    fail: this.imageUploadFailed
-                });
-
                 return this;
             },
 
@@ -140,9 +133,13 @@ define(
                 return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
             },
 
-            chooseFile: function(event) {
-                event.preventDefault();
-                this.$('.upload-image-input').click();
+            chooseFile: function() {
+                this.$('.upload-image-input').fileupload({
+                    url: this.imageUploadURL + '/' + encodeURIComponent(this.model.get('edx_video_id')),
+                    add: this.imageSelected,
+                    done: this.imageUploadSucceeded,
+                    fail: this.imageUploadFailed
+                });
             },
 
             imageSelected: function(event, data) {

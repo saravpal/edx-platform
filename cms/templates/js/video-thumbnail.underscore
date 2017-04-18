@@ -1,4 +1,4 @@
-<div class="thumbnail-wrapper <%- action === 'upload' ? 'upload' : '' %>" tabindex="0">
+<div class="thumbnail-wrapper <%- action === 'upload' ? 'upload' : '' %>">
     <img src="<%- thumbnailURL %>" alt="">
     <div class="thumbnail-overlay">
         <!-- icon and text will be different for different states -->
@@ -19,5 +19,5 @@
         </div>
     <% } %>
     <!-- hidden input for image choose dialog -->
-    <input id="thumb-<%- videoId %>" class="upload-image-input is-hidden" type="file" name="file" accept=".bmp, .jpg, .jpeg, .png, .gif"/>
+    <input id="thumb-<%- videoId %>" class="upload-image-input" type="file" name="file" accept=".bmp, .jpg, .jpeg, .png, .gif"/>
 </div>

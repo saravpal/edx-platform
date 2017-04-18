@@ -112,6 +112,8 @@ define(
                     $thumbnail = $el.find('.thumbnail-wrapper'),
                     requests = AjaxHelpers.requests(this);
 
+                videoThumbnailView.chooseFile();
+
                 verifyStateInfo($thumbnail, 'upload');
                 verifyStateInfo($thumbnail, 'requirements', true);
 
@@ -137,6 +139,8 @@ define(
                     $thumbnail = $el.find('.thumbnail-wrapper'),
                     requests = AjaxHelpers.requests(this);
 
+                videoThumbnailView.chooseFile();
+
                 // Add image to upload queue and send POST request to upload image
                 $el.find('.upload-image-input').fileupload('add', {files: [createFakeImageFile(60)]});
 
@@ -148,6 +152,8 @@ define(
             it('should show error notification in case of server error', function() {
                 var $el = render({}),
                     requests = AjaxHelpers.requests(this);
+
+                videoThumbnailView.chooseFile();
 
                 // Add image to upload queue and send POST request to upload image
                 $el.find('.upload-image-input').fileupload('add', {files: [createFakeImageFile(60)]});
