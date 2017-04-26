@@ -47,7 +47,7 @@ define(
             initialize: function(options) {
                 this.template = HtmlUtils.template(VideoThumbnailTemplate);
                 this.imageUploadURL = options.imageUploadURL;
-                this.action = this.model.get('thumbnail_url') ? 'edit' : 'upload';
+                this.action = this.model.get('course_video_image_url') ? 'edit' : 'upload';
                 _.bindAll(
                     this, 'render', 'chooseFile', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed',
                     'showHoverState', 'hideHoverState'
@@ -62,9 +62,10 @@ define(
                         duration: this.getDuration(this.model.get('duration')),
                         videoId: this.model.get('edx_video_id'),
                         actionInfo: this.actionsInfo[this.action],
-                        thumbnailURL: this.model.get('thumbnail_url')
+                        thumbnailURL: this.model.get('course_video_image_url')
                     })
                 );
+                this.hideHoverState();
                 return this;
             },
 
