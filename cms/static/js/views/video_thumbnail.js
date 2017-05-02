@@ -59,14 +59,31 @@ define(
                     this.$el,
                     this.template({
                         action: this.action,
-                        duration: this.getDuration(this.model.get('duration')),
+                        imageAltText: this.getImageAltText(),
                         videoId: this.model.get('edx_video_id'),
                         actionInfo: this.actionsInfo[this.action],
-                        thumbnailURL: this.model.get('course_video_image_url')
+                        thumbnailURL: this.model.get('course_video_image_url'),
+                        duration: this.getDuration(this.model.get('duration'))
                     })
                 );
                 this.hideHoverState();
                 return this;
+            },
+
+            getImageAltText: function() {
+                return StringUtils.interpolate(
+                    // Translators: message will be like Thumbnail for Arrow.mp4
+                    gettext('Thumbnail for {videoName}'),
+                    {videoName: this.model.get('client_video_id')}
+                );
+            },
+
+            getSRText: function() {
+                return StringUtils.interpolate(
+                    // Translators: message will be like Add Thumbnail - Arrow.mp4
+                    gettext('Add Thumbnail - {videoName}'),
+                    {videoName: this.model.get('client_video_id')}
+                );
             },
 
             getDuration: function(durationSeconds) {
@@ -169,10 +186,11 @@ define(
 
             showHoverState: function() {
                 if (this.action === 'upload') {
-                    this.setActionInfo('requirements', true);
+                    this.setActionInfo('requirements', true, this.getSRText());
                 } else if (this.action === 'edit') {
                     this.setActionInfo(this.action, true);
                 }
+                this.$('.thumbnail-wrapper').addClass('focused');
             },
 
             hideHoverState: function() {
@@ -183,10 +201,11 @@ define(
                 }
             },
 
-            setActionInfo: function(action, showText) {
-                this.$('.thumbnail-overlay').toggle(showText);
+            setActionInfo: function(action, showText, additionalSRText) {
+                this.$('.thumbnail-action').toggle(showText);
                 this.$('.thumbnail-action .action-icon').html(this.actionsInfo[action].icon);
                 this.$('.thumbnail-action .action-text').html(this.actionsInfo[action].text);
+                this.$('.thumbnail-action .action-text-sr').text(additionalSRText || '');
                 this.$('.thumbnail-wrapper').attr('class', 'thumbnail-wrapper {action}'.replace('{action}', action));
             },
 

@@ -196,7 +196,8 @@
       background: black;
 
       &:hover,
-      &:focus {
+      &:focus,
+      &.focused {
         img, .video-duration {
           @include transition(all 0.3s linear);
           opacity: 0.5;
@@ -242,12 +243,24 @@
       @include font-size(14);
     }
 
-    .thumbnail-overlay {
+    .thumbnail-overlay > :not(.upload-image-input) {
       position: absolute;
       text-align: center;
       top: 50%;
-      width: 100%;
+      left: 5px;;
+      right: 5px;
       @include transform(translateY(-50%));
+    }
+
+    .upload-image-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      z-index: 6;
+      width: $thumbnail-width;
+      height: $thumbnail-height;
     }
 
     .video-duration {
@@ -262,13 +275,8 @@
       background-color: black;
     }
 
-    .upload-image-input {
-      position: absolute;
-      top: 0;
-      opacity: 0;
-      z-index: 6;
-      width: $thumbnail-width;
-      height: $thumbnail-height;
+    &.focused {
+        box-shadow: 0 0 ($baseline/5) 1px $blue;
     }
   }
 }

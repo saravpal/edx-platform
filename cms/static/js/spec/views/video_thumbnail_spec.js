@@ -33,15 +33,21 @@ define(
                 );
             };
 
-            verifyStateInfo = function($thumbnail, state, onHover) {
+            verifyStateInfo = function($thumbnail, state, onHover, additionalSRText) {
                 var beforeIcon,
                     beforeText;
 
-                // Verify hover message, save the before hover messages to verify later
+                // Verify hover message, save the text before hover to verify later
                 if (onHover) {
                     beforeIcon = $thumbnail.find('.action-icon').html().trim();
                     beforeText = $thumbnail.find('.action-text').html().trim();
                     $thumbnail.trigger('mouseover');
+                }
+
+                if (additionalSRText) {
+                    expect(
+                        $thumbnail.find('.thumbnail-action .action-text-sr').text().trim()
+                    ).toEqual(additionalSRText);
                 }
 
                 expect($thumbnail.find('.action-icon').html().trim()).toEqual(
@@ -110,12 +116,13 @@ define(
             it('can upload image', function() {
                 var $el = render({}),
                     $thumbnail = $el.find('.thumbnail-wrapper'),
-                    requests = AjaxHelpers.requests(this);
+                    requests = AjaxHelpers.requests(this),
+                    additionalSRText = videoThumbnailView.getSRText();
 
                 videoThumbnailView.chooseFile();
 
                 verifyStateInfo($thumbnail, 'upload');
-                verifyStateInfo($thumbnail, 'requirements', true);
+                verifyStateInfo($thumbnail, 'requirements', true, additionalSRText);
 
                 // Add image to upload queue and send POST request to upload image
                 $el.find('.upload-image-input').fileupload('add', {files: [createFakeImageFile(60)]});
