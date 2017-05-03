@@ -11,6 +11,7 @@ from logging import getLogger
 
 log = getLogger(__name__)
 
+from celery_utils.chordable_django_backend import chord_task
 from celery_utils.logged_task import LoggedTask
 from celery_utils.persist_on_failure import PersistOnFailureTask
 from courseware.model_data import get_score
@@ -45,6 +46,21 @@ KNOWN_RETRY_ERRORS = (  # Errors we expect occasionally, should be resolved on r
     DatabaseNotReadyError,
 )
 RECALCULATE_GRADE_DELAY = 2  # in seconds, to prevent excessive _has_db_updated failures. See TNL-6424.
+
+
+@chord_task(max_retries=2, default_retry_delay=10)
+def add(x, y):
+    if x is 2:
+        raise add.retry(x=x, y=y, exc=NotImplementedError("WASTED"))
+    return x + y
+
+
+@chord_task()
+def tsum(results):
+    _sum = 0
+    for num in results:
+        _sum = _sum + num
+    return _sum
 
 
 class _BaseTask(PersistOnFailureTask, LoggedTask):  # pylint: disable=abstract-method
