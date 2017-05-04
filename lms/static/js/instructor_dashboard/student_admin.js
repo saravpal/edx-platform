@@ -437,7 +437,8 @@
 
         StudentAdmin.prototype.rescore_problem_single = function(onlyIfHigher) {
             var errorMessage, fullErrorMessage, fullSuccessMessage,
-                problemToReset, sendData, successMessage, uniqStudentIdentifier,
+                problemToReset, rescoreUnsupportedMessage,
+                sendData, successMessage, uniqStudentIdentifier,
                 that = this;
             uniqStudentIdentifier = this.$field_student_select_grade.val();
             problemToReset = this.$field_problem_select_single.val();
@@ -466,6 +467,7 @@
                 student_id: uniqStudentIdentifier,
                 problem_id: problemToReset
             });
+            rescoreUnsupportedMessage = gettext('This component cannot be rescored.');
             return $.ajax({
                 type: 'POST',
                 dataType: 'json',
@@ -474,7 +476,10 @@
                 success: this.clear_errors_then(function() {
                     return alert(fullSuccessMessage);  // eslint-disable-line no-alert
                 }),
-                error: statusAjaxError(function() {
+                error: statusAjaxError(function(response) {
+                    if (response.responseText === 'Specified module does not support rescoring.') {
+                        return that.$request_err_grade.text(rescoreUnsupportedMessage);
+                    }
                     return that.$request_err_grade.text(fullErrorMessage);
                 })
             });
@@ -519,7 +524,8 @@
 
         StudentAdmin.prototype.rescore_problem_all = function(onlyIfHigher) {
             var confirmMessage, errorMessage, fullConfirmMessage,
-                fullErrorMessage, fullSuccessMessage, problemToReset, sendData, successMessage,
+                fullErrorMessage, fullSuccessMessage, problemToReset,
+                rescoreUnsupportedMessage, sendData, successMessage,
                 that = this;
             problemToReset = this.$field_problem_select_all.val();
             if (!problemToReset) {
@@ -545,6 +551,7 @@
                 fullErrorMessage = _.template(errorMessage)({
                     problem_id: problemToReset
                 });
+                rescoreUnsupportedMessage = gettext('This component cannot be rescored.');
                 return $.ajax({
                     type: 'POST',
                     dataType: 'json',
@@ -553,7 +560,10 @@
                     success: this.clear_errors_then(function() {
                         return alert(fullSuccessMessage);  // eslint-disable-line no-alert
                     }),
-                    error: statusAjaxError(function() {
+                    error: statusAjaxError(function(response) {
+                        if (response.responseText === 'Specified module does not support rescoring.') {
+                            return that.$request_err_grade.text(rescoreUnsupportedMessage);
+                        }
                         return that.$request_response_error_all.text(fullErrorMessage);
                     })
                 });
