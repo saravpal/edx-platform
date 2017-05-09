@@ -48,14 +48,6 @@
                     if (courseRuns && courseRuns.length > 0) {
                         courseRun = courseRuns[0];
 
-                        if (courseRun.image && courseRun.image.src) {
-                            courseImageUrl = courseRun.image.src;
-                        } else {
-                            // The course_image_url property is attached by setActiveCourseRun.
-                            // If that hasn't been called, it won't be present yet.
-                            courseImageUrl = courseRun.course_image_url;
-                        }
-
                         $.extend(unselectedRun, {
                             course_image_url: courseImageUrl,
                             marketing_url: courseRun.marketing_url,
@@ -190,13 +182,6 @@
                         } else {
                             startDateString = this.formatDate(courseRun.start, userPreferences);
                         }
-
-                        if (courseRun.image && courseRun.image.src) {
-                            courseImageUrl = courseRun.image.src;
-                        } else {
-                            courseImageUrl = courseRun.course_image_url;
-                        }
-
 
                         this.set({
                             certificate_url: courseRun.certificate_url,
