@@ -49,7 +49,16 @@ VIDEO_SUPPORTED_FILE_FORMATS = {
     '.mov': 'video/quicktime',
 }
 
+VIDEO_IMAGE_SUPPORTED_FILE_FORMATS = {
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.bmp': 'image/gif',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+}
+
 VIDEO_UPLOAD_MAX_FILE_SIZE_GB = 5
+VIDEO_IMAGE_MAX_FILE_SIZE_MB = 2
 
 # maximum time for video to remain in upload state
 MAX_UPLOAD_HOURS = 24
@@ -157,10 +166,23 @@ def video_images_handler(request, course_key_string, edx_video_id=None):
     if 'file' not in request.FILES:
         return JsonResponse({"error": _(u"No file provided for video image")}, status=400)
 
+    error = None
     image_file = request.FILES['file']
     file_name = request.FILES['file'].name
 
-    # TODO: Image file validation
+    if not (hasattr(image_file, 'name') and hasattr(image_file, 'content_type') and hasattr(image_file, 'size')):
+        error = "Image file must contain 'name', 'content_type' and 'size'."
+    elif image_file.content_type not in VIDEO_IMAGE_SUPPORTED_FILE_FORMATS.values():
+        error = 'Image file contains unsupported content_type.'
+    else:
+        try:
+            file_name.encode('ascii')
+        except UnicodeEncodeError:
+            error = 'Image file name %s must contain only ASCII characters.' % file_name
+
+    if error:
+        return JsonResponse({'error': error}, status=400)
+
     with closing(image_file):
         image_url = update_video_image(edx_video_id, course_key_string, image_file, file_name)
         LOGGER.info(
@@ -370,7 +392,9 @@ def videos_index_html(course):
             "previous_uploads": _get_index_videos(course),
             "concurrent_upload_limit": settings.VIDEO_UPLOAD_PIPELINE.get("CONCURRENT_UPLOAD_LIMIT", 0),
             "video_supported_file_formats": VIDEO_SUPPORTED_FILE_FORMATS.keys(),
-            "video_upload_max_file_size": VIDEO_UPLOAD_MAX_FILE_SIZE_GB
+            "video_image_supported_file_formats": VIDEO_IMAGE_SUPPORTED_FILE_FORMATS.keys(),
+            "video_upload_max_file_size": VIDEO_UPLOAD_MAX_FILE_SIZE_GB,
+            "video_image_max_file_size": VIDEO_IMAGE_MAX_FILE_SIZE_MB
         }
     )
 

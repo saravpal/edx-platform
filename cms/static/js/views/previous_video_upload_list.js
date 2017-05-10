@@ -13,6 +13,8 @@ define(
                     return new PreviousVideoUploadView({
                         videoImageUploadURL: options.videoImageUploadURL,
                         videoHandlerUrl: options.videoHandlerUrl,
+                        videoImageSupportedFileFormats: options.videoImageSupportedFileFormats,
+                        videoImageMaxFileSizeInMB: options.videoImageMaxFileSizeInMB,
                         model: model
                     });
                 });

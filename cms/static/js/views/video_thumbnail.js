@@ -48,6 +48,8 @@ define(
                 this.template = HtmlUtils.template(VideoThumbnailTemplate);
                 this.imageUploadURL = options.imageUploadURL;
                 this.action = this.model.get('course_video_image_url') ? 'edit' : 'upload';
+                this.videoImageSupportedFileFormats = options.videoImageSupportedFileFormats;
+                this.videoImageMaxFileSizeInMB = options.videoImageMaxFileSizeInMB;
                 _.bindAll(
                     this, 'render', 'chooseFile', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed',
                     'showHoverState', 'hideHoverState'
@@ -63,11 +65,21 @@ define(
                         videoId: this.model.get('edx_video_id'),
                         actionInfo: this.actionsInfo[this.action],
                         thumbnailURL: this.model.get('course_video_image_url'),
-                        duration: this.getDuration(this.model.get('duration'))
+                        duration: this.getDuration(this.model.get('duration')),
+                        videoImageSupportedFileFormats: this.getVideoImageSupportedFileFormats(this.videoImageSupportedFileFormats),
+                        videoImageMaxFileSizeInMB: this.videoImageMaxFileSizeInMB
                     })
                 );
                 this.hideHoverState();
                 return this;
+            },
+
+            getVideoImageSupportedFileFormats: function(supportedFormatsArray) {
+                var supportedFormatsArray = supportedFormatsArray.sort();
+                return {
+                    humanize: supportedFormatsArray.slice(0, -1).join(', ') + ' or ' + supportedFormatsArray.slice(-1),
+                    machine: supportedFormatsArray
+                }
             },
 
             getImageAltText: function() {
@@ -152,12 +164,18 @@ define(
             },
 
             chooseFile: function() {
-                this.$('.upload-image-input').fileupload({
-                    url: this.imageUploadURL + '/' + encodeURIComponent(this.model.get('edx_video_id')),
-                    add: this.imageSelected,
-                    done: this.imageUploadSucceeded,
-                    fail: this.imageUploadFailed
-                });
+                var imageFile = {name: 'abc.png', size: 120990};
+                var errorMessage = this.validateImageFile(imageFile);
+                if (!errorMessage) {
+                    this.$('.upload-image-input').fileupload({
+                        url: this.imageUploadURL + '/' + encodeURIComponent(this.model.get('edx_video_id')),
+                        add: this.imageSelected,
+                        done: this.imageUploadSucceeded,
+                        fail: this.imageUploadFailed
+                    });
+                } else {
+                    this.readMessages([errorMessage]);
+                }
             },
 
             imageSelected: function(event, data) {
@@ -207,6 +225,11 @@ define(
                 this.$('.thumbnail-action .action-text').html(this.actionsInfo[action].text);
                 this.$('.thumbnail-action .action-text-sr').text(additionalSRText || '');
                 this.$('.thumbnail-wrapper').attr('class', 'thumbnail-wrapper {action}'.replace('{action}', action));
+            },
+
+            validateImageFile: function(imageFile) {
+                var errorMessage = '';
+                return errorMessage;
             },
 
             readMessages: function(messages) {

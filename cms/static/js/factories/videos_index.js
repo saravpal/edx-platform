@@ -12,14 +12,18 @@ define([
         uploadButton,
         previousUploads,
         videoSupportedFileFormats,
-        videoUploadMaxFileSizeInGB
+        videoImageSupportedFileFormats,
+        videoUploadMaxFileSizeInGB,
+        videoImageMaxFileSizeInMB
     ) {
         var activeView = new ActiveVideoUploadListView({
                 postUrl: videoHandlerUrl,
                 concurrentUploadLimit: concurrentUploadLimit,
                 uploadButton: uploadButton,
                 videoSupportedFileFormats: videoSupportedFileFormats,
+                videoImageSupportedFileFormats: videoImageSupportedFileFormats,
                 videoUploadMaxFileSizeInGB: videoUploadMaxFileSizeInGB,
+                videoImageMaxFileSizeInMB: videoImageMaxFileSizeInMB,
                 onFileUploadDone: function(activeVideos) {
                     $.ajax({
                         url: videoHandlerUrl,
@@ -38,7 +42,9 @@ define([
                                 videoImageUploadURL: videoImageUploadURL,
                                 videoHandlerUrl: videoHandlerUrl,
                                 collection: updatedCollection,
-                                encodingsDownloadUrl: encodingsDownloadUrl
+                                encodingsDownloadUrl: encodingsDownloadUrl,
+                                videoImageSupportedFileFormats: videoImageSupportedFileFormats,
+                                videoImageMaxFileSizeInMB: videoImageMaxFileSizeInMB
                             });
                         $contentWrapper.find('.wrapper-assets').replaceWith(updatedView.render().$el);
                     });
@@ -48,7 +54,9 @@ define([
                 videoImageUploadURL: videoImageUploadURL,
                 videoHandlerUrl: videoHandlerUrl,
                 collection: new Backbone.Collection(previousUploads),
-                encodingsDownloadUrl: encodingsDownloadUrl
+                encodingsDownloadUrl: encodingsDownloadUrl,
+                videoImageSupportedFileFormats: videoImageSupportedFileFormats,
+                videoImageMaxFileSizeInMB: videoImageMaxFileSizeInMB
             });
         $contentWrapper.append(activeView.render().$el);
         $contentWrapper.append(previousView.render().$el);
