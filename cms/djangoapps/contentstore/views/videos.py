@@ -69,6 +69,7 @@ VIDEO_IMAGE_MIN_WIDTH = 640
 VIDEO_IMAGE_MIN_HEIGHT = 360
 VIDEO_IMAGE_ASPECT_RATIO = 16/9.0
 VIDEO_IMAGE_ASPECT_RATIO_TEXT = '16:9'
+VIDEO_IMAGE_ASPECT_RATIO_ERROR_MARGIN = 0.1
 
 # maximum time for video to remain in upload state
 MAX_UPLOAD_HOURS = 24
@@ -181,6 +182,7 @@ def validate_video_image(image_file):
     """
     error = None
     image_file_width, image_file_height = get_image_dimensions(image_file)
+    image_file_aspect_ratio = abs(image_file_width/float(image_file_height) - VIDEO_IMAGE_ASPECT_RATIO)
 
     if not (hasattr(image_file, 'name') and hasattr(image_file, 'content_type') and hasattr(image_file, 'size')):
         error = _("The selected image must contain 'name', 'content_type' and 'size'.")
@@ -210,12 +212,10 @@ def validate_video_image(image_file):
             image_file_min_width=VIDEO_IMAGE_MIN_WIDTH,
             image_file_min_height=VIDEO_IMAGE_MIN_HEIGHT
         ))
-    # aspect ratio
-    # TODO : Do nearly-equal validation
-    # elif image_file_width/float(image_file_height) != VIDEO_IMAGE_ASPECT_RATIO:
-    #     error = 'The selected image must have aspect ratio of {video_image_aspect_ratio_text}'.format(
-    #         video_image_aspect_ratio_text=VIDEO_IMAGE_ASPECT_RATIO_TEXT
-    #     )
+    elif image_file_aspect_ratio > VIDEO_IMAGE_ASPECT_RATIO_ERROR_MARGIN:
+        error = _('The selected image must have aspect ratio of {video_image_aspect_ratio_text}'.format(
+            video_image_aspect_ratio_text=VIDEO_IMAGE_ASPECT_RATIO_TEXT
+        ))
     else:
         try:
             image_file.name.encode('ascii')
