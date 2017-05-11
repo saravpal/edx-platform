@@ -66,6 +66,7 @@ def program_details(request, program_uuid):
         'commerce_api_url': reverse('commerce_api:v0:baskets:create'),
     }
 
+    # TODO: Tighten this up!
     context = {
         'urls': urls,
         'show_program_listing': programs_config.enabled,
