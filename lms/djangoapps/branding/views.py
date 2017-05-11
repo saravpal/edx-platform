@@ -19,6 +19,7 @@ from edxmako.shortcuts import marketing_link
 from util.cache import cache_if_anonymous
 from util.json_request import JsonResponse
 import branding.api as branding_api
+from openedx.core.djangoapps.lang_pref.api import released_languages
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
 log = logging.getLogger(__name__)
@@ -270,14 +271,15 @@ def footer(request):
 
     # Render the footer information based on the extension
     if 'text/html' in accepts or '*/*' in accepts:
-        cache_key = u"branding.footer.{params}.html".format(
-            params=urllib.urlencode({
-                'language': language,
-                'show_openedx_logo': show_openedx_logo,
-                'include_dependencies': include_dependencies,
-                'include_language_selector': include_language_selector
-            })
-        )
+        cache_params = {
+            'language': language,
+            'show_openedx_logo': show_openedx_logo,
+            'include_dependencies': include_dependencies
+        }
+        if include_language_selector:
+            cache_params['language_selector_options'] = ','.join(sorted([lang.code for lang in released_languages()]))
+        cache_key = u"branding.footer.{params}.html".format(params=urllib.urlencode(cache_params)
+
         content = cache.get(cache_key)
         if content is None:
             with translation.override(language):
