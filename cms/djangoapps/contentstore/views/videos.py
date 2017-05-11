@@ -12,6 +12,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.files.images import get_image_dimensions
 from django.http import HttpResponse, HttpResponseNotFound
 from django.utils.translation import ugettext as _, ugettext_noop
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
@@ -59,6 +60,15 @@ VIDEO_IMAGE_SUPPORTED_FILE_FORMATS = {
 
 VIDEO_UPLOAD_MAX_FILE_SIZE_GB = 5
 VIDEO_IMAGE_MAX_FILE_SIZE_MB = 2
+VIDEO_IMAGE_MAX_BYTES = 2097152
+VIDEO_IMAGE_MIN_BYTES = 100
+
+VIDEO_IMAGE_MAX_WIDTH = 1280
+VIDEO_IMAGE_MAX_HEIGHT = 720
+VIDEO_IMAGE_MIN_WIDTH = 640
+VIDEO_IMAGE_MIN_HEIGHT = 360
+VIDEO_IMAGE_ASPECT_RATIO = 16/9.0
+VIDEO_IMAGE_ASPECT_RATIO_TEXT = '16:9'
 
 # maximum time for video to remain in upload state
 MAX_UPLOAD_HOURS = 24
@@ -159,32 +169,76 @@ def videos_handler(request, course_key_string, edx_video_id=None):
         return videos_post(course, request)
 
 
+def validate_video_image(image_file):
+    """
+    Validates video image file.
+
+    Arguments:
+        image_file: The selected image file.
+
+   Returns:
+        error (String or None): If there is error returns error message otherwise None.
+    """
+    error = None
+    image_file_width, image_file_height = get_image_dimensions(image_file)
+
+    if not (hasattr(image_file, 'name') and hasattr(image_file, 'content_type') and hasattr(image_file, 'size')):
+        error = _("The selected image must contain 'name', 'content_type' and 'size'.")
+    elif image_file.content_type not in VIDEO_IMAGE_SUPPORTED_FILE_FORMATS.values():
+        error = 'The selected image contains unsupported content_type.'
+    elif image_file.size > VIDEO_IMAGE_MAX_BYTES:
+        error = _('The selected image must be smaller than {image_max_size} MB').format(
+        image_max_size=VIDEO_IMAGE_MAX_FILE_SIZE_MB
+    )
+    elif image_file.size < VIDEO_IMAGE_MIN_BYTES:
+        error = _('The selected image must be larger than {image_min_size} bytes').format(
+        image_min_size=VIDEO_IMAGE_MIN_BYTES
+    )
+    elif image_file_width > VIDEO_IMAGE_MAX_WIDTH or image_file_height > VIDEO_IMAGE_MAX_HEIGHT:
+        error = _('The selected image size is {image_file_width}x{image_file_height}. '
+                'The maximum allowed image size is {image_file_max_width}x{image_file_max_height}.'.format(
+            image_file_width=image_file_width,
+            image_file_height=image_file_height,
+            image_file_max_width=VIDEO_IMAGE_MAX_WIDTH,
+            image_file_max_height=VIDEO_IMAGE_MAX_HEIGHT
+        ))
+    elif image_file_width < VIDEO_IMAGE_MIN_WIDTH or image_file_height < VIDEO_IMAGE_MIN_HEIGHT:
+        error = _('The selected image size is {image_file_width}x{image_file_height}. '
+                'The minimum allowed image size is {image_file_min_width}x{image_file_min_height.}'.format(
+            image_file_width=image_file_width,
+            image_file_height=image_file_height,
+            image_file_min_width=VIDEO_IMAGE_MIN_WIDTH,
+            image_file_min_height=VIDEO_IMAGE_MIN_HEIGHT
+        ))
+    # aspect ratio
+    # TODO : Do nearly-equal validation
+    # elif image_file_width/float(image_file_height) != VIDEO_IMAGE_ASPECT_RATIO:
+    #     error = 'The selected image must have aspect ratio of {video_image_aspect_ratio_text}'.format(
+    #         video_image_aspect_ratio_text=VIDEO_IMAGE_ASPECT_RATIO_TEXT
+    #     )
+    else:
+        try:
+            image_file.name.encode('ascii')
+        except UnicodeEncodeError:
+            error = _('The selected image file name {image_file_name} must contain only ASCII characters.').format(
+                image_file_name=image_file.name
+            )
+    return error
+
+
 @expect_json
 @login_required
 @require_POST
 def video_images_handler(request, course_key_string, edx_video_id=None):
     if 'file' not in request.FILES:
-        return JsonResponse({"error": _(u"No file provided for video image")}, status=400)
-
-    error = None
+        return JsonResponse({"error": _(u'No file provided for video image')}, status=400)
     image_file = request.FILES['file']
-    file_name = request.FILES['file'].name
-
-    if not (hasattr(image_file, 'name') and hasattr(image_file, 'content_type') and hasattr(image_file, 'size')):
-        error = "Image file must contain 'name', 'content_type' and 'size'."
-    elif image_file.content_type not in VIDEO_IMAGE_SUPPORTED_FILE_FORMATS.values():
-        error = 'Image file contains unsupported content_type.'
-    else:
-        try:
-            file_name.encode('ascii')
-        except UnicodeEncodeError:
-            error = 'Image file name %s must contain only ASCII characters.' % file_name
-
+    error = validate_video_image(image_file)
     if error:
         return JsonResponse({'error': error}, status=400)
 
     with closing(image_file):
-        image_url = update_video_image(edx_video_id, course_key_string, image_file, file_name)
+        image_url = update_video_image(edx_video_id, course_key_string, image_file, image_file.name)
         LOGGER.info(
             'VIDEOS: Video image uploaded for edx_video_id [%s] in course [%s]', edx_video_id, course_key_string
         )
