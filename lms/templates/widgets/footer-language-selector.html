@@ -21,7 +21,7 @@
         <i class="fa fa-globe" aria-hidden="true"></i><span class="sr">${_("Choose Language")}</span>
     </label>
     <select id="footer-language-selector" onchange="setLanguage(this)">
-        % for language in released_languages():
+        % for language in sorted(released_languages(), key=lambda x: x.code):
             <% language_name = Locale.parse(language.code.replace('_', '-'), sep='-').language_name %>
             % if language.code == LANGUAGE_CODE:
                 <option value="${language.code}" selected="selected">${language_name}</option>
