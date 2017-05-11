@@ -243,8 +243,7 @@ function(_) {
                     'seeking', 'seeked', 'timeupdate', 'ended', 'ratechange',
                     'durationchange', 'volumechange'
                 ],
-                self = this,
-                errorMessage;
+                self = this;
 
             this.config = config;
             this.logs = [];
@@ -309,6 +308,11 @@ function(_) {
 
             if (/iP(hone|od)/i.test(isTouch[0])) {
                 this.videoEl.prop('controls', true);
+            }
+
+            // Set video poster
+            if (this.config.poster) {
+                this.videoEl.prop('poster', this.config.poster);
             }
 
             // Place the <video> element on the page.

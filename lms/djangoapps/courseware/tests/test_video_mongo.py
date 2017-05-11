@@ -60,6 +60,7 @@ class TestVideoYouTube(TestVideo):
                 "streams": "0.75:jNCf2gIqpeE,1.00:ZwkTiUPN0mg,1.25:rsq9auxASqI,1.50:kMyNdzVHHgg",
                 "sub": "a_sub_file.srt.sjson",
                 "sources": sources,
+                "poster": None,
                 "captionDataDir": None,
                 "showCaptions": "true",
                 "generalSpeed": 1.0,
@@ -139,6 +140,7 @@ class TestVideoNonYouTube(TestVideo):
                 "streams": "1.00:3_yD_cEKoCk",
                 "sub": "a_sub_file.srt.sjson",
                 "sources": sources,
+                "poster": None,
                 "captionDataDir": None,
                 "showCaptions": "true",
                 "generalSpeed": 1.0,
@@ -195,6 +197,7 @@ class TestGetHtmlMethod(BaseTestXmodule):
             "streams": "1.00:3_yD_cEKoCk",
             "sub": "a_sub_file.srt.sjson",
             "sources": '[]',
+            "poster": None,
             "captionDataDir": None,
             "showCaptions": "true",
             "generalSpeed": 1.0,
@@ -923,6 +926,19 @@ class TestGetHtmlMethod(BaseTestXmodule):
         context = self.item_descriptor.render(STUDENT_VIEW).content
         self.assertIn("'download_video_link': None", context)
 
+    @patch('xmodule.video_module.video_module.edxval_api.get_course_video_image_url')
+    def test_poster_image(self, get_course_video_image_url):
+        """
+        Verify that poster image functionality works as expected.
+        """
+        video_xml = '<video display_name="Video" download_video="true" edx_video_id="12345-67890">[]</video>'
+        get_course_video_image_url.return_value = '/media/video-images/poster.png'
+
+        self.initialize_module(data=video_xml)
+        context = self.item_descriptor.render(STUDENT_VIEW).content
+
+        self.assertIn('"poster": "/media/video-images/poster.png"', context)
+
 
 @attr(shard=1)
 class TestVideoCDNRewriting(BaseTestXmodule):
@@ -1509,6 +1525,7 @@ class TestVideoWithBumper(TestVideo):
                 "streams": "0.75:jNCf2gIqpeE,1.00:ZwkTiUPN0mg,1.25:rsq9auxASqI,1.50:kMyNdzVHHgg",
                 "sub": "a_sub_file.srt.sjson",
                 "sources": sources,
+                "poster": None,
                 "captionDataDir": None,
                 "showCaptions": "true",
                 "generalSpeed": 1.0,
