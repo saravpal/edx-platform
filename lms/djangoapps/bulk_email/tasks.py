@@ -174,10 +174,14 @@ def perform_delegate_email_batches(entry_id, course_id, task_input, action_name)
     targets = email_obj.targets.all()
     global_email_context = _get_course_email_context(course)
 
-    recipient_qsets = [
-        target.get_users(course_id, user_id)
-        for target in targets
-    ]
+    recipient_qsets = []
+    for target in targets:
+        target_users = target.get_users(course_id, user_id)
+        recipient_qsets.append(target_users)
+        log.info(u"Task %s: fetched users: %d for course %s with email %s, target type %s, target display name %s",
+                 task_id, target_users.count(), course_id, email_id, target.target_type,
+                 target.long_display())
+
     combined_set = User.objects.none()
     for qset in recipient_qsets:
         combined_set |= qset
