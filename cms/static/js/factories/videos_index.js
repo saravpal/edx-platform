@@ -8,6 +8,7 @@ define([
         videoImageUploadURL,
         videoHandlerUrl,
         encodingsDownloadUrl,
+        defaultVideoImageURL,
         concurrentUploadLimit,
         uploadButton,
         previousUploads,
@@ -36,6 +37,7 @@ define([
                             }),
                             updatedView = new PreviousVideoUploadListView({
                                 videoImageUploadURL: videoImageUploadURL,
+                                defaultVideoImageURL: defaultVideoImageURL,
                                 videoHandlerUrl: videoHandlerUrl,
                                 collection: updatedCollection,
                                 encodingsDownloadUrl: encodingsDownloadUrl
@@ -46,6 +48,7 @@ define([
             }),
             previousView = new PreviousVideoUploadListView({
                 videoImageUploadURL: videoImageUploadURL,
+                defaultVideoImageURL: defaultVideoImageURL,
                 videoHandlerUrl: videoHandlerUrl,
                 collection: new Backbone.Collection(previousUploads),
                 encodingsDownloadUrl: encodingsDownloadUrl

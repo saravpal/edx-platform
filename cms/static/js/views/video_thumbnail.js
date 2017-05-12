@@ -47,6 +47,7 @@ define(
             initialize: function(options) {
                 this.template = HtmlUtils.template(VideoThumbnailTemplate);
                 this.imageUploadURL = options.imageUploadURL;
+                this.defaultVideoImageURL = options.defaultVideoImageURL;
                 this.action = this.model.get('course_video_image_url') ? 'edit' : 'upload';
                 _.bindAll(
                     this, 'render', 'chooseFile', 'imageSelected', 'imageUploadSucceeded', 'imageUploadFailed',
@@ -62,7 +63,7 @@ define(
                         imageAltText: this.getImageAltText(),
                         videoId: this.model.get('edx_video_id'),
                         actionInfo: this.actionsInfo[this.action],
-                        thumbnailURL: this.model.get('course_video_image_url'),
+                        thumbnailURL: this.model.get('course_video_image_url') || this.defaultVideoImageURL,
                         duration: this.getDuration(this.model.get('duration'))
                     })
                 );

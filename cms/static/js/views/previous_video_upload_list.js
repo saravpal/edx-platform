@@ -12,6 +12,7 @@ define(
                 this.itemViews = this.collection.map(function(model) {
                     return new PreviousVideoUploadView({
                         videoImageUploadURL: options.videoImageUploadURL,
+                        defaultVideoImageURL: options.defaultVideoImageURL,
                         videoHandlerUrl: options.videoHandlerUrl,
                         model: model
                     });
