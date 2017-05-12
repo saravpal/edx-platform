@@ -1420,3 +1420,24 @@ a.fade-cover{
   }
 }
 
+// Dashboard alert messages
+.account-activation {
+  border-top: $blue 2px solid;
+  opacity: 0.9;
+  background-color: $blue-l4;
+
+  .alert-message {
+    padding: 20px 0;
+  }
+
+  .message-copy {
+    color: $dark-gray1;
+    font-weight: 600;
+    font-size: large;
+  }
+
+  .fa.fa-check {
+    color: $uxpl-blue-base
+  }
+}
+

@@ -27,7 +27,7 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse, NoReverseMatch, reverse_lazy
 from django.core.validators import validate_email, ValidationError
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseServerError, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, Http404
 from django.shortcuts import redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.translation import ungettext
@@ -721,6 +721,11 @@ def dashboard(request):
 
     enterprise_message = get_dashboard_consent_notification(request, user, course_enrollments)
 
+    # Account activation message
+    account_activation_messages = [
+        message for message in messages.get_messages(request) if 'account-activation' in message.tags
+    ]
+
     # Global staff can see what courses errored on their dashboard
     staff_access = False
     errored_courses = {}
@@ -844,6 +849,7 @@ def dashboard(request):
         'enterprise_message': enterprise_message,
         'enrollment_message': enrollment_message,
         'redirect_message': redirect_message,
+        'account_activation_messages': account_activation_messages,
         'course_enrollments': course_enrollments,
         'course_optouts': course_optouts,
         'banner_account_activation_message': banner_account_activation_message,
@@ -2287,29 +2293,19 @@ def activate_account(request, key):
     """When link in activation e-mail is clicked"""
     regs = Registration.objects.filter(activation_key=key)
     if len(regs) == 1:
-        user_logged_in = request.user.is_authenticated()
-        already_active = True
         if not regs[0].user.is_active:
             regs[0].activate()
-            already_active = False
 
         # Enroll student in any pending courses he/she may have if auto_enroll flag is set
         _enroll_user_in_pending_courses(regs[0].user)
 
-        resp = render_to_response(
-            "registration/activation_complete.html",
-            {
-                'user_logged_in': user_logged_in,
-                'already_active': already_active
-            }
-        )
-        return resp
+        messages.success(request, 'You successfully activated your account.', extra_tags='account-activation')
     if len(regs) == 0:
-        return render_to_response(
-            "registration/activation_invalid.html",
-            {'csrf': csrf(request)['csrf_token']}
+        messages.error(
+            request, 'Something went wrong, Make sure you used correct activation url.',
+            extra_tags='account-activation'
         )
-    return HttpResponseServerError(_("Unknown error. Please e-mail us to let us know how it happened."))
+    return redirect('dashboard')
 
 
 @csrf_exempt
